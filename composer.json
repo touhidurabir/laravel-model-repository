@@ -1,0 +1,42 @@
+{
+    "name": "touhidurabir/laravel-model-repository",
+    "description": "A package to implement repository pattern for laravel models",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Touhidur Rahman",
+            "email": "abircse06@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.0"
+    },
+    "autoload" : {
+        "psr-4" : {
+            "Touhidurabir\\ModelRepository\\": "src/"
+        }
+    },
+    "autoload-dev" : {
+        "psr-4" : {
+            "Touhidurabir\\ModelRepository\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "orchestra/testbench": "^6.20",
+        "illuminate/container": "^8.54",
+        "illuminate/support": "^8.54",
+        "illuminate/database": "^8.54"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Touhidurabir\\ModelRepository\\ModelRepositoryServiceProvider"
+            ],
+            "aliases": {
+                "ModelRepository": "Touhidurabir\\ModelRepository\\Facades\\ModelRepository"
+            }
+        }
+    }
+}
