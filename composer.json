@@ -10,7 +10,8 @@
         }
     ],
     "require": {
-        "php": ">=7.2.0"
+        "php": ">=7.2.0",
+        "touhidurabir/laravel-stub-generator": "^1.0"
     },
     "autoload" : {
         "psr-4" : {

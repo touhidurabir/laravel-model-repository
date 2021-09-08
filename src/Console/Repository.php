@@ -4,22 +4,18 @@ namespace Touhidurabir\ModelRepository\Console;
 
 use Throwable;
 use Illuminate\Console\Command;
-use Touhidurabir\ModelRepository\Console\Concerns\StubGenerator;
+use Touhidurabir\StubGenerator\StubGenerator;
+use Touhidurabir\StubGenerator\Concerns\NamespaceResolver;
 use Touhidurabir\ModelRepository\Console\Concerns\CommandExceptionHandler;
 
-class Repository extends Command
-{
+class Repository extends Command {
+
+    use NamespaceResolver;
     
     /**
      * Process the handeled exception and provide output
      */
     use CommandExceptionHandler;
-
-
-    /**
-     * Provide class class generation process form stub
-     */
-    use StubGenerator;
 
 
     /**
@@ -29,7 +25,8 @@ class Repository extends Command
      */
     protected $signature = 'make:repository
                             {class              : Repository class name}
-                            {--model=Model      : Model class name}';
+                            {--model=Model      : Model class name}
+                            {--replace          : Should replace an existing one}';
 
 
     /**
@@ -91,16 +88,22 @@ class Repository extends Command
                     $this->argument('class')
                 ) ?? config('model-repository.repositories_namespace')
             );
-            
-            $saveStatus = $this->saveClass($this->resolveClassName($this->argument('class')), [
-                    'class'             => $this->resolveClassName($this->argument('class')),
-                    'model'             => $this->resolveClassName($this->option('model')),
-                    'modelInstance'     => lcfirst($this->resolveClassName($this->option('model'))),
-                    'modelNamespace'    => $this->resolveClassNamespace($this->option('model')) ?? config('model-repository.models_namespace'),
-                    'baseClass'         => config('model-repository.base_class'),
-                    'baseClassName'     => last(explode('\\', config('model-repository.base_class'))),
-                    'classNamespace'    => $this->resolveClassNamespace($this->argument('class')) ?? config('model-repository.repositories_namespace'),
-            ]);
+
+            $saveStatus = (new StubGenerator)
+                            ->from($this->generateFullPathOfStubFile($this->stubPath), true)
+                            ->to($this->classStorePath, true)
+                            ->as($this->resolveClassName($this->argument('class')))
+                            ->withReplacers([
+                                'class'             => $this->resolveClassName($this->argument('class')),
+                                'model'             => $this->resolveClassName($this->option('model')),
+                                'modelInstance'     => lcfirst($this->resolveClassName($this->option('model'))),
+                                'modelNamespace'    => $this->resolveClassNamespace($this->option('model')) ?? config('model-repository.models_namespace'),
+                                'baseClass'         => config('model-repository.base_class'),
+                                'baseClassName'     => last(explode('\\', config('model-repository.base_class'))),
+                                'classNamespace'    => $this->resolveClassNamespace($this->argument('class')) ?? config('model-repository.repositories_namespace'),
+                            ])
+                            ->replace($this->option('replace'))
+                            ->save();
 
             if ( $saveStatus ) {
 
@@ -111,6 +114,18 @@ class Repository extends Command
             
             $this->outputConsoleException($exception);
         }
+    }
+
+
+    /**
+     * Genrate the stub file full absolute path
+     *
+     * @param  string $stubRelativePath
+     * @return string
+     */
+    protected function generateFullPathOfStubFile(string $stubRelativePath) {
+
+        return __DIR__ . $stubRelativePath;
     }
     
 }
