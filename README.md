@@ -61,6 +61,15 @@ The above command will try to store the repository class to path **App\SomeOther
 
 Check the **config** file after publishing at the **config/model-repository.php** to see the default settings configurations . 
 
+It is also possible to replace an existing repository file via the command when passing the flag **--replace** 
+
+```bash
+php artisan make:repository UserRepository --model=User --replace
+```
+
+The above command will replace the already exiting **UserRepository.php** at the given path with newly generated one. 
+
+> Be ery carefull of the replacing ability as if your repository class contains any custom code, that will be fully replaced with a newly generated file and those custom changes will be lost.
 ## Usage
 
 The best way to use the repository classes via **Dependency Injection** through the **controller** classes . for example : 
