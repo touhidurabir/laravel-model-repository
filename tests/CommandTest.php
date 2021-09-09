@@ -103,13 +103,21 @@ class CommandTest extends TestCase {
     /**
      * @test
      */
-    public function it_will_throw_exception_if_class_already_exists_and_not_instruct_to_replace() {
+    // public function it_will_throw_exception_if_class_already_exists_and_not_instruct_to_replace() {
 
-        $this->artisan('make:repository', ['class' => 'ProfileRepository']);
+    //     $this->artisan('make:repository', ['class' => 'ProfileRepository']);
 
-        $this->expectException(Exception::class);
+    //     $this->expectException(Exception::class);
 
-        $this->artisan('make:repository', ['class' => 'ProfileRepository']);
+    //     $this->artisan('make:repository', ['class' => 'ProfileRepository']);
+    // }
+
+
+    public function it_will_failed_if_class_already_exists_and_not_instruct_to_replace() {
+
+        $this->artisan('make:repository', ['class' => 'ProfileRepository'])->assertExitCode(0);;
+
+        $this->artisan('make:repository', ['class' => 'ProfileRepository'])->assertExitCode(1);;
     }
 
 

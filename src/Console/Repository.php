@@ -2,6 +2,7 @@
 
 namespace Touhidurabir\ModelRepository\Console;
 
+use Exception;
 use Throwable;
 use Illuminate\Console\Command;
 use Touhidurabir\StubGenerator\StubGenerator;
@@ -110,9 +111,11 @@ class Repository extends Command {
                 $this->info('Repository class generated successfully');
             }
             
-        } catch (Exception $exception) {
+        } catch (Throwable $exception) {
             
             $this->outputConsoleException($exception);
+
+            return 1;
         }
     }
 
