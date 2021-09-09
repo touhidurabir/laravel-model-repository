@@ -18,3 +18,8 @@ All notable changes to this project will be documented in this file.
 - Added replaceable feature to repository command
 - Bug Fix
 - Readme Update
+
+
+## [1.1.1] - 2021-09-08
+- Bug Fix
+- Test Update
