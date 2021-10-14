@@ -1,4 +1,4 @@
-# Laravel Model UUID
+# Laravel Model Repository
 
 A simple package to use **Repository Pattern** approach for laravel models . 
 

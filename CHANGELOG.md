@@ -23,3 +23,7 @@ All notable changes to this project will be documented in this file.
 ## [1.1.1] - 2021-09-08
 - Bug Fix
 - Test Update
+
+## [1.1.2] - 2021-10-14
+- Bug Fix
+- Readme Update
