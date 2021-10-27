@@ -55,7 +55,7 @@ class UserRepository extends BaseRepository {
 This package by default assume all **models** are located in path **App\Models** and use the path **App\Repositories** to store the **repository** classes. But also possible to provide custom repositories class path and different model class path . for example 
 
 ```bash
-php artisan make:reposity App\\SomeOtherPath\\UserRepository --model=App\\OtherModelPath\\User
+php artisan make:repository App\\SomeOtherPath\\UserRepository --model=App\\OtherModelPath\\User
 ```
 The above command will try to store the repository class to path **App\SomeOtherPath** and will create a directory named **SomeOtherPath** if not already exists. Will also try to resolve model path/namespace from **App\OtherModelPath** . 
 

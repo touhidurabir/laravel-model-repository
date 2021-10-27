@@ -31,17 +31,35 @@ class CommandTest extends TestCase {
     /**
      * Generate the repository class store full absolute path based on config settings
      *
-     * @return void
+     * @param  string $repositoryNamespace
+     * @return string
      */
-    protected function generateRepositoryClassStoreFullPath() {
+    protected function generateRepositoryClassStoreFullPath(string $repositoryNamespace = null) {
 
-        $this->repositoryStoreFullPath = $this->sanitizePath(
+        return $this->sanitizePath(
             str_replace(
                 '/public', 
-                $this->sanitizePath($this->generateFilePathFromNamespace(config('model-repository.repositories_namespace'))), 
+                $this->sanitizePath($this->generateFilePathFromNamespace($repositoryNamespace ?? config('model-repository.repositories_namespace'))), 
                 public_path()
             )
         );
+    }
+
+
+    /**
+     * Reset the repository store folders and created files
+     *
+     * @param  string $fullpath
+     * @return void
+     */
+    protected function resetRepositorysWithDirectory(string $fullpath = null) {
+
+        if ( File::isDirectory($fullpath) ) {
+
+            array_map('unlink', glob($fullpath . '*.*'));
+
+            rmdir($fullpath);
+        }
     }
 
 
@@ -54,18 +72,13 @@ class CommandTest extends TestCase {
 
         parent::setUp();
 
-        $this->generateRepositoryClassStoreFullPath();
+        $this->repositoryStoreFullPath = $this->generateRepositoryClassStoreFullPath();
 
         $self = $this;
 
         $this->beforeApplicationDestroyed(function () use ($self) {
 
-            if ( File::isDirectory($self->repositoryStoreFullPath) ) {
-
-                array_map('unlink', glob($self->repositoryStoreFullPath . '*.*'));
-
-                rmdir($self->repositoryStoreFullPath);
-            }
+            $self->resetRepositorysWithDirectory($self->repositoryStoreFullPath);
         });
     }
 
@@ -100,19 +113,6 @@ class CommandTest extends TestCase {
     }
 
 
-    /**
-     * @test
-     */
-    // public function it_will_throw_exception_if_class_already_exists_and_not_instruct_to_replace() {
-
-    //     $this->artisan('make:repository', ['class' => 'ProfileRepository']);
-
-    //     $this->expectException(Exception::class);
-
-    //     $this->artisan('make:repository', ['class' => 'ProfileRepository']);
-    // }
-
-
     public function it_will_failed_if_class_already_exists_and_not_instruct_to_replace() {
 
         $this->artisan('make:repository', ['class' => 'ProfileRepository'])->assertExitCode(0);;
@@ -143,6 +143,24 @@ class CommandTest extends TestCase {
             File::get($this->repositoryStoreFullPath . 'TestRepository.php'),
             File::get(__DIR__ . '/App/Repositories/TestRepository.php'),
         );
+    }
+
+
+    /**
+     * @test
+     */
+    public function it_will_generate_repository_class_with_custom_namespace_given() {
+
+        $this->artisan(
+            'make:repository', 
+            ['class' => 'App\\DummyRepositories\\TestRepository', '--model' => 'Test', '--replace' => true]
+        )->assertExitCode(0);
+
+        $storePath = $this->generateRepositoryClassStoreFullPath('App\\DummyRepositories');
+
+        $this->assertTrue(File::exists($storePath . 'TestRepository.php'));
+
+        $this->resetRepositorysWithDirectory($storePath);
     }
 
 }
