@@ -5,11 +5,10 @@ namespace Touhidurabir\ModelRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Touhidurabir\ModelRepository\Contracts\RepositoryContract;
 
-abstract class BaseRepository implements RepositoryContract {
-    
+abstract class BaseRepository implements RepositoryContract
+{
     /**
      * Model property on class instances
      *
@@ -40,10 +39,11 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  array $array
      * @return bool
      */
-    protected function arrayHasAllNumericKeys(array $array) {
-		
+    protected function arrayHasAllNumericKeys(array $array)
+    {
+
         return !(count(array_filter(array_keys($array), 'is_string')) > 0);
-	}
+    }
 
 
     /**
@@ -51,14 +51,15 @@ abstract class BaseRepository implements RepositoryContract {
      *
      * @return string
      */
-    public function getModelClass() {
+    public function getModelClass()
+    {
 
-        if ( $this->modelClass ) {
+        if ($this->modelClass) {
 
             return $this->modelClass;
         }
 
-        if ( ! $this->model ) {
+        if (! $this->model) {
 
             $this->modelClass = get_class($this->model);
         }
@@ -73,18 +74,19 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  array   $data
      * @return array
      */
-    public function sanitizeToModelFillable(array $data) {
+    public function sanitizeToModelFillable(array $data)
+    {
 
         $classModel   = $this->model->getModel();
         $fillable     = $classModel->getFillable();
 
-        $fillables = ! empty($fillable) 
-                        ? $fillable 
+        $fillables = ! empty($fillable)
+                        ? $fillable
                         : array_diff(
                             array_diff(
-                                Schema::getColumnListing($classModel->getTable()), 
+                                Schema::getColumnListing($classModel->getTable()),
                                 $classModel->getGuarded()
-                            ), 
+                            ),
                             $classModel->getHidden()
                         );
 
@@ -98,10 +100,11 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  array   $data
      * @return array
      */
-    public function extraData(array $data) {
-        
+    public function extraData(array $data)
+    {
+
         $modelFillables = $this->sanitizeToModelFillable($data);
-        
+
         return array_diff_key($data, $modelFillables);
     }
 
@@ -111,15 +114,16 @@ abstract class BaseRepository implements RepositoryContract {
      *
      * @return boolean
      */
-    public function hasSoftDelete() {
+    public function hasSoftDelete()
+    {
 
-        if ( !$this->modelClass && !$this->getModelClass() ) {
+        if (!$this->modelClass && !$this->getModelClass()) {
 
             return false;
         }
 
         return in_array(
-            'Illuminate\Database\Eloquent\SoftDeletes', 
+            'Illuminate\Database\Eloquent\SoftDeletes',
             class_uses($this->modelClass)
         );
     }
@@ -131,10 +135,11 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  object<\Illuminate\Database\Eloquent\Model>   $model
      * @return $this
      */
-    public function setModel(Model $model) {
-        
+    public function setModel(Model $model)
+    {
+
         $this->model = $model;
-        
+
         return $this;
     }
 
@@ -144,8 +149,9 @@ abstract class BaseRepository implements RepositoryContract {
      *
      * @return object<\Illuminate\Database\Eloquent\Model>
      */
-    public function getModel() {
-        
+    public function getModel()
+    {
+
         return $this->model;
     }
 
@@ -160,7 +166,8 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  object<\Illuminate\Database\Eloquent\Model>   $model
      * @return $this
      */
-    public static function withModel(Model $model) {
+    public static function withModel(Model $model)
+    {
 
         return new static($model);
     }
@@ -172,10 +179,11 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  string   $operator
      * @return $this
      */
-    public function setComparisor(string $operator = '=') {
-        
+    public function setComparisor(string $operator = '=')
+    {
+
         $this->comparisonOperator = $operator;
-        
+
         return $this;
     }
 
@@ -189,12 +197,13 @@ abstract class BaseRepository implements RepositoryContract {
      *
      * @return mixed
      */
-    public function find($param, array $withs = [], bool $allowException = false) {
+    public function find($param, array $withs = [], bool $allowException = false)
+    {
 
-        $find   = $allowException ? 'findOrFail'  : 'find';
+        $find   = $allowException ? 'findOrFail' : 'find';
         $first  = $allowException ? 'firstOrFail' : 'first';
 
-        if ( !is_array($param) || $this->arrayHasAllNumericKeys($param) ) {
+        if (!is_array($param) || $this->arrayHasAllNumericKeys($param)) {
 
             return $this->model->with($withs)->{$find}($param);
         }
@@ -209,13 +218,14 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  array   $orders
      * @return $this
      */
-    public function orderBy(array $orders = ['id' => 'asc']) {
+    public function orderBy(array $orders = ['id' => 'asc'])
+    {
 
         $existingOrders = $this->model->getQuery()->orders ?? [];
 
         foreach ($orders as $column => $direction) {
 
-            if ( ! in_array(compact("column", "direction"), $existingOrders) ) {
+            if (! in_array(compact("column", "direction"), $existingOrders)) {
 
                 $this->model = $this->model->orderBy($column, $direction);
             }
@@ -231,9 +241,10 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  array   $with
      * @return $this
      */
-    public function with($with = []) {
+    public function with($with = [])
+    {
 
-        if ( ! empty($with) ) {
+        if (! empty($with)) {
 
             $this->model = $this->getModel()->with($with);
         }
@@ -252,16 +263,17 @@ abstract class BaseRepository implements RepositoryContract {
      *
      * @return mixed<null|object>
      */
-    public function paginate(   ?int    $perPage    = null, 
-                                array   $columns    = ['*'], 
-                                string  $pageName   = 'page',
-                                ?int    $page       = null
-                            ) {
+    public function paginate(
+        ?int    $perPage    = null,
+        array   $columns    = ['*'],
+        string  $pageName   = 'page',
+        ?int    $page       = null
+    ) {
 
         return $this->orderBy()->getModel()->paginate(
-            $perPage ?? 15, 
-            $columns, 
-            $pageName, 
+            $perPage ?? 15,
+            $columns,
+            $pageName,
             $page ?? 1
         );
     }
@@ -273,25 +285,27 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  array  $constrains
      * @return $this
      */
-    public function where(array $constrains = []) {
+    public function where(array $constrains = [])
+    {
 
         foreach ($constrains as $column => $value) {
-            
+
             $this->model = $this->model->where($column, $value);
         }
 
         return $this;
     }
 
-    
+
     /**
      * Get all instances of model
      *
      * @param  array  $withs
      * @return mixed
      */
-    public function all(array $withs = []) {
-        
+    public function all(array $withs = [])
+    {
+
         return $this->orderBy()->getModel()->with($withs)->get();
     }
 
@@ -302,12 +316,13 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  array  $data
      * @return mixed
      */
-    public function create(array $data) {
+    public function create(array $data)
+    {
 
         return $this->model->create($this->sanitizeToModelFillable($data));
     }
 
-    
+
     /**
      * Update record in the database
      *
@@ -316,10 +331,11 @@ abstract class BaseRepository implements RepositoryContract {
      *
      * @return mixed
      */
-    public function update(array $data, $prinamryKeyValue) {
+    public function update(array $data, $prinamryKeyValue)
+    {
 
-        $recordToUpdate = $prinamryKeyValue instanceof Model 
-                              ? $prinamryKeyValue 
+        $recordToUpdate = $prinamryKeyValue instanceof Model
+                              ? $prinamryKeyValue
                               : $this->find($prinamryKeyValue);
 
         $recordToUpdate->update($this->sanitizeToModelFillable($data));
@@ -335,13 +351,14 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  mixed $param
      * @return mixed
      */
-    public function delete($param) {
+    public function delete($param)
+    {
 
         $resource = $param instanceof Model ? $param : $this->find($param);
 
-        if ( $resource instanceof Collection ) {
-            
-            if ( $this->hasSoftDelete() ) {
+        if ($resource instanceof Collection) {
+
+            if ($this->hasSoftDelete()) {
 
                 $resource->toQuery()->update([
                     $this->model->getDeletedAtColumn() => now()
@@ -363,11 +380,12 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  mixed $param
      * @return boolean
      */
-    public function forceDelete($param) {
+    public function forceDelete($param)
+    {
 
         $resource = $param instanceof Model ? $param : $this->find($param);
 
-        if ( $resource instanceof Collection ) {
+        if ($resource instanceof Collection) {
 
             $resource->toQuery()->delete();
 
@@ -384,16 +402,17 @@ abstract class BaseRepository implements RepositoryContract {
      * @param  mixed $param
      * @return boolean
      */
-    public function restore($param) {
+    public function restore($param)
+    {
 
-        if ( ! $this->hasSoftDelete() ) {
+        if (! $this->hasSoftDelete()) {
 
             throw new \Exception('The ' . $this->getModelClass() . ' class does not use soft delete feature.');
         }
 
         $resource = $param instanceof Model ? $param : $this->model->onlyTrashed()->findOrFail($param);
 
-        if ( $resource instanceof Collection ) {
+        if ($resource instanceof Collection) {
 
             $resource->toQuery()->update([
                 $this->model->getDeletedAtColumn() => null

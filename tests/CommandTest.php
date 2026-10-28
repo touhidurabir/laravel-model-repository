@@ -3,11 +3,9 @@
 namespace Touhidurabir\ModelRepository\Tests;
 
 use PHPUnit\Framework\Attributes\Test;
-use Exception;
 use RuntimeException;
 use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Artisan;
 use Touhidurabir\ModelRepository\Tests\Traits\FileHelpers;
 use Touhidurabir\ModelRepository\Tests\Traits\LaravelTestBootstrapping;
 
@@ -15,8 +13,8 @@ use Touhidurabir\ModelRepository\Tests\Traits\LaravelTestBootstrapping;
  *  TO-DO: Need more testing.
  *  File existence, directory existence, path accesseable etc
  */
-class CommandTest extends TestCase {
-
+class CommandTest extends TestCase
+{
     use LaravelTestBootstrapping;
 
     use FileHelpers;
@@ -35,12 +33,13 @@ class CommandTest extends TestCase {
      * @param  string $repositoryNamespace
      * @return string
      */
-    protected function generateRepositoryClassStoreFullPath(?string $repositoryNamespace = null) {
+    protected function generateRepositoryClassStoreFullPath(?string $repositoryNamespace = null)
+    {
 
         return $this->sanitizePath(
             str_replace(
-                '/public', 
-                $this->sanitizePath($this->generateFilePathFromNamespace($repositoryNamespace ?? config('model-repository.repositories_namespace'))), 
+                '/public',
+                $this->sanitizePath($this->generateFilePathFromNamespace($repositoryNamespace ?? config('model-repository.repositories_namespace'))),
                 public_path()
             )
         );
@@ -53,9 +52,10 @@ class CommandTest extends TestCase {
      * @param  string $fullpath
      * @return void
      */
-    protected function resetRepositorysWithDirectory(?string $fullpath = null) {
+    protected function resetRepositorysWithDirectory(?string $fullpath = null)
+    {
 
-        if ( File::isDirectory($fullpath) ) {
+        if (File::isDirectory($fullpath)) {
 
             array_map('unlink', glob($fullpath . '*.*'));
 
@@ -69,7 +69,8 @@ class CommandTest extends TestCase {
      *
      * @return void
      */
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
 
         parent::setUp();
 
@@ -88,8 +89,9 @@ class CommandTest extends TestCase {
      * @test
      */
     #[Test]
-    public function repository_command_will_run() {
-        
+    public function repository_command_will_run()
+    {
+
         $command = $this->artisan('make:repository UserRepository');
 
         $command->assertExitCode(0);
@@ -108,7 +110,8 @@ class CommandTest extends TestCase {
      * @test
      */
     #[Test]
-    public function repository_command_will_fail_if_repository_class_not_give() {
+    public function repository_command_will_fail_if_repository_class_not_give()
+    {
 
         $this->expectException(RuntimeException::class);
 
@@ -120,11 +123,14 @@ class CommandTest extends TestCase {
      * @test
      */
     #[Test]
-    public function it_will_failed_if_class_already_exists_and_not_instruct_to_replace() {
+    public function it_will_failed_if_class_already_exists_and_not_instruct_to_replace()
+    {
 
-        $this->artisan('make:repository', ['class' => 'ProfileRepository'])->assertExitCode(0);;
+        $this->artisan('make:repository', ['class' => 'ProfileRepository'])->assertExitCode(0);
+        ;
 
-        $this->artisan('make:repository', ['class' => 'ProfileRepository'])->assertExitCode(1);;
+        $this->artisan('make:repository', ['class' => 'ProfileRepository'])->assertExitCode(1);
+        ;
     }
 
 
@@ -132,7 +138,8 @@ class CommandTest extends TestCase {
      * @test
      */
     #[Test]
-    public function it_will_generate_proper_repository_class_at_given_path() {
+    public function it_will_generate_proper_repository_class_at_given_path()
+    {
 
         $this->artisan('make:repository', ['class' => 'ProfileRepository'])->assertExitCode(0);
 
@@ -144,7 +151,8 @@ class CommandTest extends TestCase {
      * @test
      */
     #[Test]
-    public function it_will_generate_repository_class_with_proper_content() {
+    public function it_will_generate_repository_class_with_proper_content()
+    {
 
         $this->artisan('make:repository TestRepository --replace --model=Test')->assertExitCode(0);
 
@@ -159,10 +167,11 @@ class CommandTest extends TestCase {
      * @test
      */
     #[Test]
-    public function it_will_generate_repository_class_with_custom_namespace_given() {
+    public function it_will_generate_repository_class_with_custom_namespace_given()
+    {
 
         $this->artisan(
-            'make:repository', 
+            'make:repository',
             ['class' => 'App\\DummyRepositories\\TestRepository', '--model' => 'Test', '--replace' => true]
         )->assertExitCode(0);
 
