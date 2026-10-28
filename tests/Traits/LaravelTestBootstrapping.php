@@ -32,7 +32,7 @@ trait LaravelTestBootstrapping
     {
 
         return [
-            'ModelUuid' => ModelRepository::class,
+            'ModelRepository' => ModelRepository::class,
         ];
     }
 }

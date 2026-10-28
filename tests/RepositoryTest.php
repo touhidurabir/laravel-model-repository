@@ -3,10 +3,12 @@
 namespace Touhidurabir\ModelRepository\Tests;
 
 use PHPUnit\Framework\Attributes\Test;
+use InvalidArgumentException;
 use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Touhidurabir\ModelRepository\BaseRepository;
+use Touhidurabir\ModelRepository\Facades\ModelRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Touhidurabir\ModelRepository\Tests\App\Models\Profile;
 use Touhidurabir\ModelRepository\Contracts\RepositoryContract;
@@ -238,6 +240,38 @@ class RepositoryTest extends TestCase
         $repository->forceDelete($forceDeleted->id);
 
         $this->assertNull(Profile::withTrashed()->find($forceDeleted->id));
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function model_repository_facade_can_make_a_repository_for_a_model()
+    {
+
+        $repository = ModelRepository::make(Profile::class);
+
+        $this->assertInstanceOf(BaseRepository::class, $repository);
+        $this->assertInstanceOf(Profile::class, $repository->getModel());
+        $this->assertEquals(Profile::class, $repository->getModelClass());
+
+        $profile = ModelRepository::make(new Profile())->create(['first_name' => 'name', 'last_name' => 'Name']);
+
+        $this->assertEquals($profile->id, $repository->find($profile->id)->id);
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function model_repository_facade_rejects_a_non_model_class()
+    {
+
+        $this->expectException(InvalidArgumentException::class);
+
+        ModelRepository::make(Collection::class);
     }
 
 

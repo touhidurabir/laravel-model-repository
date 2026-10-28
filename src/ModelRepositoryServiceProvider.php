@@ -39,6 +39,11 @@ class ModelRepositoryServiceProvider extends ServiceProvider
             __DIR__.'/../config/model-repository.php',
             'model-repository'
         );
+
+        $this->app->singleton('model-repository', function () {
+
+            return new RepositoryFactory();
+        });
     }
 
 }

@@ -318,6 +318,18 @@ $profile = $this->profileRepository->create($request->validated());
 
 This become very useful when in one single controller method do need to push data to multiple model table
 
+### ModelRepository Facade
+
+For a quick repository without generating a repository class, use the **ModelRepository** facade. It accepts a model class name or a model instance and returns a repository with all the methods above.
+
+```php
+use Touhidurabir\ModelRepository\Facades\ModelRepository;
+
+$user = ModelRepository::make(User::class)->find(1);
+
+ModelRepository::make(new User)->create($request->validated());
+```
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
