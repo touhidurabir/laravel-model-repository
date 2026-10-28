@@ -3,6 +3,7 @@
 namespace Touhidurabir\ModelRepository\Tests;
 
 use PHPUnit\Framework\Attributes\Test;
+use ReflectionMethod;
 use InvalidArgumentException;
 use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Collection;
@@ -272,6 +273,21 @@ class RepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         ModelRepository::make(Collection::class);
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_contract_find_defaults_match_the_base_repository()
+    {
+
+        $contractParameters = (new ReflectionMethod(RepositoryContract::class, 'find'))->getParameters();
+        $baseParameters     = (new ReflectionMethod(BaseRepository::class, 'find'))->getParameters();
+
+        $this->assertSame($baseParameters[2]->getDefaultValue(), $contractParameters[2]->getDefaultValue());
+        $this->assertFalse($contractParameters[2]->getDefaultValue());
     }
 
 

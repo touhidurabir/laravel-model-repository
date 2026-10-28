@@ -13,7 +13,7 @@ interface RepositoryContract
      *
      * @return mixed
      */
-    public function find($param, array $withs, bool $allowException = true);
+    public function find($param, array $withs, bool $allowException = false);
 
 
     /**
