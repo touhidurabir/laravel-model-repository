@@ -15,7 +15,7 @@ trait CommandExceptionHandler {
      *
      * @return void
      */
-	public function outputConsoleException (Throwable $exception, string $message = null) {
+	public function outputConsoleException (Throwable $exception, ?string $message = null) {
 
 		$this->error($message ?? 'Exception Arise During Task Execution');
             

@@ -252,10 +252,10 @@ abstract class BaseRepository implements RepositoryContract {
      *
      * @return mixed<null|object>
      */
-    public function paginate(   int     $perPage    = null, 
+    public function paginate(   ?int    $perPage    = null, 
                                 array   $columns    = ['*'], 
                                 string  $pageName   = 'page',
-                                int     $page       = null
+                                ?int    $page       = null
                             ) {
 
         return $this->orderBy()->getModel()->paginate(
@@ -391,7 +391,7 @@ abstract class BaseRepository implements RepositoryContract {
             throw new \Exception('The ' . $this->getModelClass() . ' class does not use soft delete feature.');
         }
 
-        $resource = $param instanceof Model ? $param : $this->model->onlyTrashed->findorFail($param);
+        $resource = $param instanceof Model ? $param : $this->model->onlyTrashed()->findOrFail($param);
 
         if ( $resource instanceof Collection ) {
 

@@ -23,7 +23,7 @@ trait FileHelpers {
      * @param  mixed<string|null> $namespace
      * @return mixed<string|null>
      */
-    protected function generateFilePathFromNamespace(string $namespace = null) {
+    protected function generateFilePathFromNamespace(?string $namespace = null) {
 
         if ( ! $namespace ) {
 
