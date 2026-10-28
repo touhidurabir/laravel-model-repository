@@ -77,7 +77,7 @@ class Repository extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return int
      */
     public function handle()
     {
@@ -117,8 +117,10 @@ class Repository extends Command
 
             $this->outputConsoleException($exception);
 
-            return 1;
+            return self::FAILURE;
         }
+
+        return self::SUCCESS;
     }
 
 

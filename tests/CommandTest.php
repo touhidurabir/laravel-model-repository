@@ -5,7 +5,11 @@ namespace Touhidurabir\ModelRepository\Tests;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
 use Orchestra\Testbench\TestCase;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Facades\File;
+use Touhidurabir\ModelRepository\Console\Repository;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Touhidurabir\ModelRepository\Tests\Traits\FileHelpers;
 use Touhidurabir\ModelRepository\Tests\Traits\LaravelTestBootstrapping;
 
@@ -180,6 +184,28 @@ class CommandTest extends TestCase
         $this->assertTrue(File::exists($storePath . 'TestRepository.php'));
 
         $this->resetRepositorysWithDirectory($storePath);
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_command_handle_returns_an_explicit_exit_code()
+    {
+
+        $command = $this->app->make(Repository::class);
+        $command->setLaravel($this->app);
+
+        $input = new ArrayInput(['class' => 'ExitCodeRepository'], $command->getDefinition());
+
+        $command->setInput($input);
+        $command->setOutput(new OutputStyle($input, new BufferedOutput()));
+
+        $this->assertSame(Repository::SUCCESS, $command->handle());
+
+        // The class now exists and --replace is not given, so generation fails.
+        $this->assertSame(Repository::FAILURE, $command->handle());
     }
 
 }
