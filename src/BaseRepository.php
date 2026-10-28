@@ -49,7 +49,7 @@ abstract class BaseRepository implements RepositoryContract
     /**
      * Get the model class full namespace path
      *
-     * @return string
+     * @return string|null
      */
     public function getModelClass()
     {
@@ -59,9 +59,12 @@ abstract class BaseRepository implements RepositoryContract
             return $this->modelClass;
         }
 
-        if (! $this->model) {
+        if ($this->model) {
 
-            $this->modelClass = get_class($this->model);
+            // After where()/orderBy()/with() the bound model is an Eloquent builder.
+            $this->modelClass = get_class(
+                $this->model instanceof Model ? $this->model : $this->model->getModel()
+            );
         }
 
         return $this->modelClass;

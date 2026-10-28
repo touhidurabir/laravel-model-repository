@@ -168,6 +168,80 @@ class RepositoryTest extends TestCase
 
 
     /**
+     * Create a profile repository that does not set the $modelClass property
+     *
+     * @return object<\Touhidurabir\ModelRepository\BaseRepository>
+     */
+    protected function profileRepositoryWithoutModelClass()
+    {
+
+        return new class (new Profile()) extends BaseRepository {
+            public function __construct(Profile $profile)
+            {
+
+                $this->model = $profile;
+            }
+        };
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_resolves_model_class_from_the_model_if_model_class_not_set()
+    {
+
+        $repository = $this->profileRepositoryWithoutModelClass();
+
+        $this->assertEquals(Profile::class, $repository->getModelClass());
+        $this->assertTrue($repository->hasSoftDelete());
+
+        // A builder bound by where() still resolves the model class.
+        $repository = $this->profileRepositoryWithoutModelClass()->where(['first_name' => 'name']);
+
+        $this->assertEquals(Profile::class, $repository->getModelClass());
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_model_class_is_null_if_no_model_bound()
+    {
+
+        $repository = new class () extends BaseRepository {
+        };
+
+        $this->assertNull($repository->getModelClass());
+        $this->assertFalse($repository->hasSoftDelete());
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_without_model_class_can_force_delete_and_restore()
+    {
+
+        $repository = $this->profileRepositoryWithoutModelClass();
+
+        $deleted = $repository->create(['first_name' => 'name', 'last_name' => 'Name']);
+        $repository->delete($deleted->id);
+        $repository->restore($deleted->id);
+
+        $this->assertNotNull(Profile::find($deleted->id));
+
+        $forceDeleted = $repository->create(['first_name' => 'name', 'last_name' => 'Name']);
+        $repository->forceDelete($forceDeleted->id);
+
+        $this->assertNull(Profile::withTrashed()->find($forceDeleted->id));
+    }
+
+
+    /**
      * @test
      */
     #[Test]
