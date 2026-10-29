@@ -9,10 +9,10 @@ use Touhidurabir\StubGenerator\StubGenerator;
 use Touhidurabir\StubGenerator\Concerns\NamespaceResolver;
 use Touhidurabir\ModelRepository\Console\Concerns\CommandExceptionHandler;
 
-class Repository extends Command {
-
+class Repository extends Command
+{
     use NamespaceResolver;
-    
+
     /**
      * Process the handeled exception and provide output
      */
@@ -67,8 +67,9 @@ class Repository extends Command {
      *
      * @return void
      */
-    public function __construct() {
-        
+    public function __construct()
+    {
+
         parent::__construct();
     }
 
@@ -76,10 +77,11 @@ class Repository extends Command {
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return int
      */
-    public function handle() {
-        
+    public function handle()
+    {
+
         $this->info('Creating repository class');
 
         try {
@@ -90,7 +92,7 @@ class Repository extends Command {
                 ) ?? config('model-repository.repositories_namespace')
             );
 
-            $saveStatus = (new StubGenerator)
+            $saveStatus = (new StubGenerator())
                             ->from($this->generateFullPathOfStubFile($this->stubPath), true)
                             ->to($this->classStorePath, true)
                             ->as($this->resolveClassName($this->argument('class')))
@@ -106,17 +108,19 @@ class Repository extends Command {
                             ->replace($this->option('replace'))
                             ->save();
 
-            if ( $saveStatus ) {
+            if ($saveStatus) {
 
                 $this->info('Repository class generated successfully');
             }
-            
+
         } catch (Throwable $exception) {
-            
+
             $this->outputConsoleException($exception);
 
-            return 1;
+            return self::FAILURE;
         }
+
+        return self::SUCCESS;
     }
 
 
@@ -126,9 +130,10 @@ class Repository extends Command {
      * @param  string $stubRelativePath
      * @return string
      */
-    protected function generateFullPathOfStubFile(string $stubRelativePath) {
+    protected function generateFullPathOfStubFile(string $stubRelativePath)
+    {
 
         return __DIR__ . $stubRelativePath;
     }
-    
+
 }

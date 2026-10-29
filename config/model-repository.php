@@ -4,11 +4,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Base repository class 
+    | Base repository class
     |--------------------------------------------------------------------------
     |
     | The base repository class that will be extended by all all other generated
-    | model repository classes . 
+    | model repository classes .
     |
     */
 
@@ -20,8 +20,8 @@ return [
     | Default model namespace prefix
     |--------------------------------------------------------------------------
     |
-    | The base model path which will be used to get the full namespace of the 
-    | give model for which the repository class will be genrated . 
+    | The base model path which will be used to get the full namespace of the
+    | give model for which the repository class will be genrated .
     |
     */
 
@@ -33,7 +33,7 @@ return [
     | Path/location namespace to save repository classes
     |--------------------------------------------------------------------------
     |
-    | location where to store the repository classes to save/store. 
+    | location where to store the repository classes to save/store.
     |
     */
 

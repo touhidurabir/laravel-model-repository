@@ -2,31 +2,35 @@
 
 namespace Touhidurabir\ModelRepository\Tests;
 
+use PHPUnit\Framework\Attributes\Test;
+use ReflectionMethod;
+use InvalidArgumentException;
 use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Touhidurabir\ModelRepository\BaseRepository;
-use Touhidurabir\ModelRepository\Tests\App\Models\User;
+use Touhidurabir\ModelRepository\Facades\ModelRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Touhidurabir\ModelRepository\Tests\App\Models\Profile;
 use Touhidurabir\ModelRepository\Contracts\RepositoryContract;
 use Touhidurabir\ModelRepository\Tests\Traits\LaravelTestBootstrapping;
 use Touhidurabir\ModelRepository\Tests\App\Repositories\ProfileRepository;
+
 // use Touhidurabir\ModelRepository\Tests\Traits\LaravelSetup;
 
 /**
  *  TO-DO: Need more testing.
  *  Relation, delete/forceDelete/restore on collection, pagination, where clause, orderBy etc
  */
-class RepositoryTest extends TestCase {
-
+class RepositoryTest extends TestCase
+{
     use LaravelTestBootstrapping;
 
     // use LaravelSetup;
 
     /**
      * The profile repository
-     * 
+     *
      * @var object<\Touhidurabir\ModelRepository\Tests\App\Repositories\ProfileRepository>
      */
     protected $profileRepository;
@@ -34,12 +38,13 @@ class RepositoryTest extends TestCase {
 
     /**
      * Create test repositories
-     * 
+     *
      * @return void
      */
-    protected function createRepository() {
+    protected function createRepository()
+    {
 
-        $this->profileRepository = new ProfileRepository(new Profile);
+        $this->profileRepository = new ProfileRepository(new Profile());
     }
 
 
@@ -49,7 +54,8 @@ class RepositoryTest extends TestCase {
      * @param  Illuminate\Foundation\Application $app
      * @return void
      */
-    protected function defineEnvironment($app) {
+    protected function defineEnvironment($app)
+    {
 
         // Setup default database to use sqlite :memory:
         $app['config']->set('database.default', 'testbench');
@@ -71,10 +77,11 @@ class RepositoryTest extends TestCase {
      *
      * @return void
      */
-    protected function defineDatabaseMigrations() {
+    protected function defineDatabaseMigrations()
+    {
 
         $this->loadMigrationsFrom(__DIR__ . '/App/database/migrations');
-        
+
         $this->artisan('migrate', ['--database' => 'testbench'])->run();
 
         $this->beforeApplicationDestroyed(function () {
@@ -85,10 +92,11 @@ class RepositoryTest extends TestCase {
 
     /**
      * Setup the test environment.
-     * 
+     *
      * @return void
      */
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
 
         // Code before application created.
 
@@ -103,7 +111,9 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function will_have_proper_repository_instance() {
+    #[Test]
+    public function will_have_proper_repository_instance()
+    {
 
         $this->assertTrue($this->profileRepository instanceof ProfileRepository);
         $this->assertTrue($this->profileRepository instanceof BaseRepository);
@@ -114,9 +124,11 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function can_initiate_repository_via_static_method() {
+    #[Test]
+    public function can_initiate_repository_via_static_method()
+    {
 
-        $alternateProfileRepository = ProfileRepository::withModel(new Profile);
+        $alternateProfileRepository = ProfileRepository::withModel(new Profile());
 
         $this->assertTrue($alternateProfileRepository instanceof ProfileRepository);
         $this->assertTrue($alternateProfileRepository instanceof BaseRepository);
@@ -127,7 +139,9 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_class_can_return_back_proper_model_instance() {
+    #[Test]
+    public function repository_class_can_return_back_proper_model_instance()
+    {
 
         $this->assertTrue($this->profileRepository->getModel() instanceof Profile);
         $this->assertTrue($this->profileRepository->getModel() instanceof Model);
@@ -137,7 +151,9 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_class_can_return_back_proper_model_class() {
+    #[Test]
+    public function repository_class_can_return_back_proper_model_class()
+    {
 
         $this->assertEquals($this->profileRepository->getModelClass(), Profile::class);
     }
@@ -146,16 +162,141 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_class_can_check_if_model_has_soft_delete_feature_enabled() {
+    #[Test]
+    public function repository_class_can_check_if_model_has_soft_delete_feature_enabled()
+    {
 
         $this->assertTrue($this->profileRepository->hasSoftDelete());
     }
-    
+
+
+    /**
+     * Create a profile repository that does not set the $modelClass property
+     *
+     * @return object<\Touhidurabir\ModelRepository\BaseRepository>
+     */
+    protected function profileRepositoryWithoutModelClass()
+    {
+
+        return new class (new Profile()) extends BaseRepository {
+            public function __construct(Profile $profile)
+            {
+
+                $this->model = $profile;
+            }
+        };
+    }
+
 
     /**
      * @test
      */
-    public function repository_can_store() {
+    #[Test]
+    public function repository_resolves_model_class_from_the_model_if_model_class_not_set()
+    {
+
+        $repository = $this->profileRepositoryWithoutModelClass();
+
+        $this->assertEquals(Profile::class, $repository->getModelClass());
+        $this->assertTrue($repository->hasSoftDelete());
+
+        // A builder bound by where() still resolves the model class.
+        $repository = $this->profileRepositoryWithoutModelClass()->where(['first_name' => 'name']);
+
+        $this->assertEquals(Profile::class, $repository->getModelClass());
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_model_class_is_null_if_no_model_bound()
+    {
+
+        $repository = new class () extends BaseRepository {
+        };
+
+        $this->assertNull($repository->getModelClass());
+        $this->assertFalse($repository->hasSoftDelete());
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_without_model_class_can_force_delete_and_restore()
+    {
+
+        $repository = $this->profileRepositoryWithoutModelClass();
+
+        $deleted = $repository->create(['first_name' => 'name', 'last_name' => 'Name']);
+        $repository->delete($deleted->id);
+        $repository->restore($deleted->id);
+
+        $this->assertNotNull(Profile::find($deleted->id));
+
+        $forceDeleted = $repository->create(['first_name' => 'name', 'last_name' => 'Name']);
+        $repository->forceDelete($forceDeleted->id);
+
+        $this->assertNull(Profile::withTrashed()->find($forceDeleted->id));
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function model_repository_facade_can_make_a_repository_for_a_model()
+    {
+
+        $repository = ModelRepository::make(Profile::class);
+
+        $this->assertInstanceOf(BaseRepository::class, $repository);
+        $this->assertInstanceOf(Profile::class, $repository->getModel());
+        $this->assertEquals(Profile::class, $repository->getModelClass());
+
+        $profile = ModelRepository::make(new Profile())->create(['first_name' => 'name', 'last_name' => 'Name']);
+
+        $this->assertEquals($profile->id, $repository->find($profile->id)->id);
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function model_repository_facade_rejects_a_non_model_class()
+    {
+
+        $this->expectException(InvalidArgumentException::class);
+
+        ModelRepository::make(Collection::class);
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_contract_find_defaults_match_the_base_repository()
+    {
+
+        $contractParameters = (new ReflectionMethod(RepositoryContract::class, 'find'))->getParameters();
+        $baseParameters     = (new ReflectionMethod(BaseRepository::class, 'find'))->getParameters();
+
+        $this->assertSame($baseParameters[2]->getDefaultValue(), $contractParameters[2]->getDefaultValue());
+        $this->assertFalse($contractParameters[2]->getDefaultValue());
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_can_store()
+    {
 
         $profile = $this->profileRepository->create([
             'first_name'    => 'First_Name',
@@ -172,7 +313,9 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_store_on_given_non_associated_table_columns() {
+    #[Test]
+    public function repository_can_store_on_given_non_associated_table_columns()
+    {
 
         $profile = $this->profileRepository->create([
             'first_name'    => 'First_Name',
@@ -190,8 +333,10 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_update() {
-        
+    #[Test]
+    public function repository_can_update()
+    {
+
         $profile = $this->profileRepository->create([
             'first_name'    => 'First_Name',
             'last_name'     => 'Last_name'
@@ -211,8 +356,10 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_find() {
-        
+    #[Test]
+    public function repository_can_find()
+    {
+
         $profile = $this->profileRepository->create([
             'first_name'    => 'name',
             'last_name'     => 'Name'
@@ -225,8 +372,10 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_find_multiple_as_collection() {
-        
+    #[Test]
+    public function repository_can_find_multiple_as_collection()
+    {
+
         $profile1 = $this->profileRepository->create([
             'first_name'    => 'name1',
             'last_name'     => 'Name1'
@@ -245,7 +394,9 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_find_via_array_constrain() {
+    #[Test]
+    public function repository_can_find_via_array_constrain()
+    {
 
         $profile = $this->profileRepository->create([
             'first_name'    => 'First_Name',
@@ -260,7 +411,9 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_throw_exception_on_failed_find() {
+    #[Test]
+    public function repository_can_throw_exception_on_failed_find()
+    {
 
         $this->profileRepository->create([
             'first_name'    => 'First_Name',
@@ -280,8 +433,10 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_delete() {
-        
+    #[Test]
+    public function repository_can_delete()
+    {
+
         $profile = $this->profileRepository->create([
             'first_name'    => 'name',
             'last_name'     => 'Name'
@@ -297,8 +452,10 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_force_delete() {
-        
+    #[Test]
+    public function repository_can_force_delete()
+    {
+
         $profile = $this->profileRepository->create([
             'first_name'    => 'name',
             'last_name'     => 'Name'
@@ -314,8 +471,10 @@ class RepositoryTest extends TestCase {
     /**
      * @test
      */
-    public function repository_can_restore() {
-        
+    #[Test]
+    public function repository_can_restore()
+    {
+
         $profile = $this->profileRepository->create([
             'first_name'    => 'name',
             'last_name'     => 'Name'
@@ -326,6 +485,28 @@ class RepositoryTest extends TestCase {
         $this->assertNull($this->profileRepository->find($profile->id));
 
         $this->profileRepository->restore($profile);
+
+        $this->assertEquals($this->profileRepository->find($profile->id)->id, $profile->id);
+    }
+
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function repository_can_restore_via_primary_key()
+    {
+
+        $profile = $this->profileRepository->create([
+            'first_name'    => 'name',
+            'last_name'     => 'Name'
+        ]);
+
+        $this->profileRepository->delete($profile);
+
+        $this->assertNull($this->profileRepository->find($profile->id));
+
+        $this->profileRepository->restore($profile->id);
 
         $this->assertEquals($this->profileRepository->find($profile->id)->id, $profile->id);
     }

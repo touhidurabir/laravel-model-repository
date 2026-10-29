@@ -2,8 +2,8 @@
 
 namespace Touhidurabir\ModelRepository\Tests\Traits;
 
-trait FileHelpers {
-
+trait FileHelpers
+{
     /**
      * Sanitize the path to proper useable path
      * Remove any unecessary slashes
@@ -11,9 +11,10 @@ trait FileHelpers {
      * @param  string $path
      * @return string
      */
-    protected function sanitizePath(string $path) {
+    protected function sanitizePath(string $path)
+    {
 
-        return preg_replace('#/+#','/', "/" . $path . "/");
+        return preg_replace('#/+#', '/', "/" . $path . "/");
     }
 
 
@@ -23,9 +24,10 @@ trait FileHelpers {
      * @param  mixed<string|null> $namespace
      * @return mixed<string|null>
      */
-    protected function generateFilePathFromNamespace(string $namespace = null) {
+    protected function generateFilePathFromNamespace(?string $namespace = null)
+    {
 
-        if ( ! $namespace ) {
+        if (! $namespace) {
 
             return null;
         }

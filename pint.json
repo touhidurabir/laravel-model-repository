@@ -1,0 +1,6 @@
+{
+    "preset": "psr12",
+    "notPath": [
+        "tests/App/Repositories/TestRepository.php"
+    ]
+}

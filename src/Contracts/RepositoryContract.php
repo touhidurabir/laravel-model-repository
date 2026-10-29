@@ -2,8 +2,8 @@
 
 namespace Touhidurabir\ModelRepository\Contracts;
 
-interface RepositoryContract {
-    
+interface RepositoryContract
+{
     /**
      * Find specific record
      *
@@ -13,9 +13,9 @@ interface RepositoryContract {
      *
      * @return mixed
      */
-    public function find($param, array $withs, bool $allowException = true);
-    
-    
+    public function find($param, array $withs, bool $allowException = false);
+
+
     /**
      * Return all records
      *
@@ -51,5 +51,5 @@ interface RepositoryContract {
      * @return mixed
      */
     public function delete($param);
-    
+
 }

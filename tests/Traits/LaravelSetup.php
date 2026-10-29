@@ -2,18 +2,16 @@
 
 namespace Touhidurabir\ModelRepository\Tests\Traits;
 
-use Touhidurabir\ModelRepository\Facades\ModelRepository;
-use Touhidurabir\ModelRepository\ModelRepositoryServiceProvider;
-
-trait LaravelSetup {
-
+trait LaravelSetup
+{
     /**
      * Define environment setup.
      *
      * @param  Illuminate\Foundation\Application $app
      * @return void
      */
-    protected function defineEnvironment($app) {
+    protected function defineEnvironment($app)
+    {
 
         // Setup default database to use sqlite :memory:
         $app['config']->set('database.default', 'testbench');
@@ -35,15 +33,16 @@ trait LaravelSetup {
      *
      * @return void
      */
-    protected function defineDatabaseMigrations() {
+    protected function defineDatabaseMigrations()
+    {
 
         $this->loadMigrationsFrom(__DIR__ . '/App/database/migrations');
-        
+
         $this->artisan('migrate', ['--database' => 'testbench'])->run();
 
         $this->beforeApplicationDestroyed(function () {
             $this->artisan('migrate:rollback', ['--database' => 'testbench'])->run();
         });
     }
-    
+
 }
